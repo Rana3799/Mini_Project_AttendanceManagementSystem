@@ -1,6 +1,7 @@
 ﻿using AttendanceManagementSystem.DataAccess.DTO;
 using AttendanceManagementSystem.DataAccess.Extensions;
 using AttendanceManagementSystem.DataAccess.Interface;
+using AttendanceManagementSystem.DataAccess.Repository;
 using AttendanceManagementSystem.Interface;
 using System;
 using System.Collections.Generic;
@@ -92,9 +93,10 @@ namespace AttendanceManagementSystem.Service.Implementations
         }
 
         // This method can call the same logic as the user's method.
-        public async Task<IEnumerable<MonthlyAttendanceReportDto>> GetEmployeeMonthlyAttendanceAsync(string employeeId, int year, int month)
+        public async Task<IEnumerable<MonthlyAttendanceReportDto>> GetEmployeeMonthlyAttendanceAsync(string userId, int year, int month)
         {
-            return await GetUserMonthlyAttendanceAsync(employeeId, year, month);
+            return await _attendanceRepository.GetEmployeeMonthlyAttendanceAsync(userId, year, month);
         }
+
     }
 }

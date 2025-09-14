@@ -85,22 +85,19 @@ namespace AttendanceManagementSystem.Controllers.V1
         /// <summary>
         /// Gets an employee's monthly attendance report (Admin access required).
         /// </summary>
-        /// <param name="employeeId">The ID of the employee.</param>
-        /// <param name="year">The year for the report.</param>
-        /// <param name="month">The month for the report.</param>
-        /// <returns>A monthly attendance report for the employee.</returns>
         [Authorize(Roles = "Admin")]
         [HttpGet("admin/monthly/{employeeId}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<MonthlyAttendanceReportDto>))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetEmployeeMonthlyAttendance(string employeeId, [FromQuery] int year, [FromQuery] int month)
+        public async Task<IActionResult> GetEmployeeMonthlyAttendance(
+            string employeeId, [FromQuery] int year, [FromQuery] int month)
         {
             var report = await _attendanceService.GetEmployeeMonthlyAttendanceAsync(employeeId, year, month);
             if (report == null || !report.Any())
             {
-                return NotFound();
+                return NotFound(new { Message = "No attendance found for this employee." });
             }
             return Ok(report);
         }

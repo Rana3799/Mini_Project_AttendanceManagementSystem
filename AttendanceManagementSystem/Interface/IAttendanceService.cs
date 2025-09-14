@@ -9,6 +9,8 @@ namespace AttendanceManagementSystem.Interface
         Task<Attendance> MarkInTimeAsync(string userId);
         Task<Attendance> MarkOutTimeAsync(string userId);
         Task<IEnumerable<MonthlyAttendanceReportDto>> GetUserMonthlyAttendanceAsync(string userId, int year, int month);
-        Task<IEnumerable<MonthlyAttendanceReportDto>> GetEmployeeMonthlyAttendanceAsync(string employeeId, int year, int month);
+
+        //Admin method for getting employee monthly attendance
+        Task<IEnumerable<MonthlyAttendanceReportDto>> GetEmployeeMonthlyAttendanceAsync(string userId, int year, int month);
     }
 }

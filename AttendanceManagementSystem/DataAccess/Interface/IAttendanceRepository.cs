@@ -9,7 +9,11 @@ namespace AttendanceManagementSystem.DataAccess.Interface
             Task<Attendance> GetTodayAttendanceByUserIdAsync(string userId, DateTime dateTime);
             // You'll also need a method to add a new attendance record
             Task<Attendance> AddAsync(Attendance attendanceRecord);
-        Task<IEnumerable<Attendance>> GetByUserIdAndMonthAsync(string userId, int year, int month);
+            Task<IEnumerable<Attendance>> GetByUserIdAndMonthAsync(string userId, int year, int month);
+            Task<IEnumerable<MonthlyAttendanceReportDto>> GetUserMonthlyAttendanceAsync(string userId, int year, int month);
+
+            //Admin only
+            Task<IEnumerable<MonthlyAttendanceReportDto>> GetEmployeeMonthlyAttendanceAsync(string userId, int year, int month);
     }
 }
 

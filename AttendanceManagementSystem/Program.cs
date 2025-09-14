@@ -2,9 +2,20 @@ using AttendanceManagementSystem.DataAccess.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Serilog
+Log.Logger = new LoggerConfiguration()
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day) // daily log files
+    .CreateLogger();
+
+// Replace default logger with Serilog
+builder.Host.UseSerilog();
 
 // Add services to the container.
 builder.Services.AddApplication();
@@ -69,6 +80,9 @@ builder.Services.AddAuthentication(options =>
 
 
 var app = builder.Build();
+
+// Global exception handler
+app.UseGlobalExceptionHandler();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

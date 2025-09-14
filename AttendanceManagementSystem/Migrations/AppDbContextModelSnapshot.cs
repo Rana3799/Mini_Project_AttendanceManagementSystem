@@ -48,7 +48,7 @@ namespace AttendanceManagementSystem.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Attendances");
+                    b.ToTable("Attendances", (string)null);
                 });
 
             modelBuilder.Entity("AttendanceManagementSystem.DataAccess.Extensions.Organization", b =>
@@ -76,7 +76,7 @@ namespace AttendanceManagementSystem.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Organizations");
+                    b.ToTable("Organizations", (string)null);
                 });
 
             modelBuilder.Entity("AttendanceManagementSystem.DataAccess.Extensions.Role", b =>
@@ -98,7 +98,7 @@ namespace AttendanceManagementSystem.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Roles");
+                    b.ToTable("Roles", (string)null);
                 });
 
             modelBuilder.Entity("AttendanceManagementSystem.DataAccess.Extensions.User", b =>
@@ -148,7 +148,7 @@ namespace AttendanceManagementSystem.Migrations
 
                     b.HasKey("UserId");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("AttendanceManagementSystem.DataAccess.Identity.ApplicationRole", b =>
