@@ -22,8 +22,8 @@ namespace AttendanceManagementSystem.Service.Implementations
         public async Task<Attendance> MarkInTimeAsync(string userId)
         {
             var now = DateTime.Now.TimeOfDay;
-            var inTimeStart = new TimeSpan(14, 0, 0); // 11:00 AM
-            var inTimeEnd = new TimeSpan(15, 30, 0);  // 11:30 AM
+            var inTimeStart = new TimeSpan(12, 0, 0); // 11:00 AM
+            var inTimeEnd = new TimeSpan(13, 30, 0);  // 11:30 AM
 
             if (now < inTimeStart || now > inTimeEnd)
             {
@@ -41,7 +41,8 @@ namespace AttendanceManagementSystem.Service.Implementations
             {
                 UserId = userId,
                 AttendanceDate = DateTime.UtcNow,
-                Type = "IN"
+                Type = "IN",
+                CheckInTime= DateTime.UtcNow
             };
 
             return await _attendanceRepository.AddAsync(attendanceRecord);
@@ -50,8 +51,8 @@ namespace AttendanceManagementSystem.Service.Implementations
         public async Task<Attendance> MarkOutTimeAsync(string userId)
         {
             var now = DateTime.Now.TimeOfDay;
-            var outTimeStart = new TimeSpan(8, 0, 0); // 8:00 AM
-            var outTimeEnd = new TimeSpan(8, 30, 0);  // 8:30 AM
+            var outTimeStart = new TimeSpan(12, 30, 0); // 8:00 AM
+            var outTimeEnd = new TimeSpan(13, 30, 0);  // 8:30 AM
 
             if (now < outTimeStart || now > outTimeEnd)
             {
@@ -69,7 +70,8 @@ namespace AttendanceManagementSystem.Service.Implementations
             {
                 UserId = userId,
                 AttendanceDate = DateTime.UtcNow,
-                Type = "OUT"
+                Type = "OUT",
+                CheckOutTime= DateTime.UtcNow
             };
 
             return await _attendanceRepository.AddAsync(attendanceRecord);

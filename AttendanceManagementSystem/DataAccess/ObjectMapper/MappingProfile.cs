@@ -1,5 +1,6 @@
 ﻿using AttendanceManagementSystem.DataAccess.DTO;
 using AttendanceManagementSystem.DataAccess.Extensions;
+using AttendanceManagementSystem.DataAccess.Identity;
 using AutoMapper;
 
 namespace AttendanceManagementSystem.DataAccess.ObjectMapper
@@ -10,7 +11,9 @@ namespace AttendanceManagementSystem.DataAccess.ObjectMapper
         {
             // Example: Domain User -> DTO
             CreateMap<User, UserCreateDto>().ReverseMap();
-            CreateMap<UserUpdateDto, User>();
+            CreateMap<UserUpdateDto, User>(); 
+            CreateMap<UserCreateDto, ApplicationUser>().ReverseMap();
+            CreateMap <UserUpdateDto,ApplicationUser>().ReverseMap();
         }
     }
 }

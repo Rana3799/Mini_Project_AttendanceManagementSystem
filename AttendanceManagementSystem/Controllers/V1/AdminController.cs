@@ -53,7 +53,7 @@ namespace AttendanceManagementSystem.Controllers.V1
             {
                 UserName = dto.UserId,
                 Email = dto.Email,
-                FullName = dto.FullName
+               // FullName = dto.FullName
             };
 
             var result = await _userManager.CreateAsync(user, dto.Password);
