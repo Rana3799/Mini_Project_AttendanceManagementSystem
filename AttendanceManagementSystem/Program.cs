@@ -1,4 +1,5 @@
 using AttendanceManagementSystem.DataAccess.Extensions;
+using AttendanceManagementSystem.MailConfig;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
@@ -78,6 +79,16 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+
+// add caching
+builder.Services.AddMemoryCache();
+
+// Email
+// Bind Smtp settings
+builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("Smtp"));
+
+// Register email sender service
+builder.Services.AddTransient<IEmailSender, SmtpEmailSender>();
 
 var app = builder.Build();
 

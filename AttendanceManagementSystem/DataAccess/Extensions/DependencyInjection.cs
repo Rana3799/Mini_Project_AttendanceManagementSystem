@@ -1,12 +1,12 @@
 ﻿using AttendanceManagementSystem.DataAccess.Entities.Data;
 using AttendanceManagementSystem.DataAccess.Identity;
 using AttendanceManagementSystem.DataAccess.IdentityPolicy;
-using AttendanceManagementSystem.DataAccess.ObjectMapper;
 using AttendanceManagementSystem.DataAccess.Interface;    // For IOrganizationRepository etc.
+using AttendanceManagementSystem.DataAccess.ObjectMapper;
 using AttendanceManagementSystem.DataAccess.Repository;  // For OrganizationRepository etc.
 using AttendanceManagementSystem.Interface;              // For IOrganizationService etc.
+using AttendanceManagementSystem.MailConfig;
 using AttendanceManagementSystem.Service.Implementations;// For OrganizationService etc.
-
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -61,7 +61,6 @@ namespace AttendanceManagementSystem.DataAccess.Extensions
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAttendanceService, AttendanceService>();
-
 
             return services;
         }
