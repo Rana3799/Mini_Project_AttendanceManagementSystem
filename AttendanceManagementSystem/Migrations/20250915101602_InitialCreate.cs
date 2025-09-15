@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace AttendanceManagementSystem.Migrations
 {
     /// <inheritdoc />
-    public partial class AddUserDetailConstraints : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -22,7 +22,7 @@ namespace AttendanceManagementSystem.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     AttendanceDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Type = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CheckInTime = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -37,13 +37,11 @@ namespace AttendanceManagementSystem.Migrations
                 name: "Organizations",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    EstablishmentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Location = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedBy = table.Column<int>(type: "int", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedOn = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -71,6 +69,8 @@ namespace AttendanceManagementSystem.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    HierarchySequence = table.Column<int>(type: "int", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -111,7 +111,9 @@ namespace AttendanceManagementSystem.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    userID = table.Column<int>(type: "int", nullable: false),
                     FullName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    OrganizationId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -130,6 +132,11 @@ namespace AttendanceManagementSystem.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Users_Organizations_OrganizationId",
+                        column: x => x.OrganizationId,
+                        principalTable: "Organizations",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -252,11 +259,11 @@ namespace AttendanceManagementSystem.Migrations
             migrationBuilder.InsertData(
                 schema: "identity",
                 table: "Roles",
-                columns: new[] { "Id", "ConcurrencyStamp", "Description", "Name", "NormalizedName" },
+                columns: new[] { "Id", "ConcurrencyStamp", "Description", "HierarchySequence", "IsActive", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { "a1f5b8c7-2345-5678-901b-fedcba654321", null, null, "User", "USER" },
-                    { "d9b1c3a2-1234-4567-890a-abcdef123456", null, null, "Admin", "ADMIN" }
+                    { "a1f5b8c7-2345-5678-901b-fedcba654321", null, "Standard application user", 2, true, "User", "USER" },
+                    { "d9b1c3a2-1234-4567-890a-abcdef123456", null, "Administrator role with full permissions", 1, true, "Admin", "ADMIN" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -314,6 +321,12 @@ namespace AttendanceManagementSystem.Migrations
                 filter: "[Email] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Users_OrganizationId",
+                schema: "identity",
+                table: "Users",
+                column: "OrganizationId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Users_UserName",
                 schema: "identity",
                 table: "Users",
@@ -335,9 +348,6 @@ namespace AttendanceManagementSystem.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Attendances");
-
-            migrationBuilder.DropTable(
-                name: "Organizations");
 
             migrationBuilder.DropTable(
                 name: "RoleClaims",
@@ -372,6 +382,9 @@ namespace AttendanceManagementSystem.Migrations
             migrationBuilder.DropTable(
                 name: "Users",
                 schema: "identity");
+
+            migrationBuilder.DropTable(
+                name: "Organizations");
         }
     }
 }

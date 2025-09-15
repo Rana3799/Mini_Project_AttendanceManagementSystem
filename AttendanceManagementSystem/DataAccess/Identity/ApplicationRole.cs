@@ -4,7 +4,10 @@ namespace AttendanceManagementSystem.DataAccess.Identity
 {
     public class ApplicationRole : IdentityRole
     {
-        // Add custom fields if needed
+        public bool IsActive { get; set; } = true;
+        public int HierarchySequence { get; set; }
+
+        // Optional additional metadata
         public string? Description { get; set; }
     }
 }

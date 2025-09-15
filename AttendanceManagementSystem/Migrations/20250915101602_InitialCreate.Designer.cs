@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AttendanceManagementSystem.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250913194050_AddUserDetailConstraints")]
-    partial class AddUserDetailConstraints
+    [Migration("20250915101602_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,29 @@ namespace AttendanceManagementSystem.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("AttendanceManagementSystem.DataAccess.Entities.Data.Organization", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Organizations");
+                });
 
             modelBuilder.Entity("AttendanceManagementSystem.DataAccess.Extensions.Attendance", b =>
                 {
@@ -45,40 +68,13 @@ namespace AttendanceManagementSystem.Migrations
                     b.Property<string>("Type")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.ToTable("Attendances");
-                });
-
-            modelBuilder.Entity("AttendanceManagementSystem.DataAccess.Extensions.Organization", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CreatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("EstablishmentDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Location")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Organizations");
                 });
 
             modelBuilder.Entity("AttendanceManagementSystem.DataAccess.Extensions.Role", b =>
@@ -165,6 +161,12 @@ namespace AttendanceManagementSystem.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("HierarchySequence")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Name")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -190,12 +192,18 @@ namespace AttendanceManagementSystem.Migrations
                         new
                         {
                             Id = "d9b1c3a2-1234-4567-890a-abcdef123456",
+                            Description = "Administrator role with full permissions",
+                            HierarchySequence = 1,
+                            IsActive = true,
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
                             Id = "a1f5b8c7-2345-5678-901b-fedcba654321",
+                            Description = "Standard application user",
+                            HierarchySequence = 2,
+                            IsActive = true,
                             Name = "User",
                             NormalizedName = "USER"
                         });
@@ -237,6 +245,9 @@ namespace AttendanceManagementSystem.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
+                    b.Property<string>("OrganizationId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("PasswordHash")
                         .HasColumnType("nvarchar(max)");
 
@@ -256,6 +267,9 @@ namespace AttendanceManagementSystem.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
+                    b.Property<int>("userID")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
@@ -269,6 +283,8 @@ namespace AttendanceManagementSystem.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.HasIndex("OrganizationId");
 
                     b.HasIndex("UserName")
                         .IsUnique()
@@ -381,6 +397,15 @@ namespace AttendanceManagementSystem.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("UserTokens", "identity");
+                });
+
+            modelBuilder.Entity("AttendanceManagementSystem.DataAccess.Identity.ApplicationUser", b =>
+                {
+                    b.HasOne("AttendanceManagementSystem.DataAccess.Entities.Data.Organization", "Organization")
+                        .WithMany()
+                        .HasForeignKey("OrganizationId");
+
+                    b.Navigation("Organization");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
