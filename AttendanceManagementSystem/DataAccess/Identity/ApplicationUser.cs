@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using AttendanceManagementSystem.DataAccess.Entities.Data;
+using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 
 namespace AttendanceManagementSystem.DataAccess.Identity
@@ -9,5 +10,8 @@ namespace AttendanceManagementSystem.DataAccess.Identity
         [Key]
         public int userID { get; set; } 
         public string? FullName { get; set; }
+        public string? OrganizationId { get; set; }
+        public Organization? Organization { get; set; }
+
     }
 }

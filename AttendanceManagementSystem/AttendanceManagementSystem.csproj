@@ -40,7 +40,6 @@
     <Folder Include="DataAccess\DIRegistration\" />
     <Folder Include="DataAccess\Entities\Models\" />
     <Folder Include="DataAccess\Entities\Seeders\" />
-    <Folder Include="Migrations\" />
   </ItemGroup>
 
 </Project>
