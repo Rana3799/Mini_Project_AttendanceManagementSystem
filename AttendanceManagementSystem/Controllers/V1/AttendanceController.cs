@@ -1,8 +1,11 @@
 ﻿using AttendanceManagementSystem.DataAccess.DTO;
+using AttendanceManagementSystem.DataAccess.Extensions;
 using AttendanceManagementSystem.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace AttendanceManagementSystem.Controllers.V1
 {
@@ -23,6 +26,7 @@ namespace AttendanceManagementSystem.Controllers.V1
         /// </summary>
         /// <param name="attendanceInRequestDto">User ID</param>
         /// <returns>A status code indicating success or failure.</returns>
+        [Authorize] // only logged-in users can access
         [HttpPost("in")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -31,14 +35,37 @@ namespace AttendanceManagementSystem.Controllers.V1
         {
             try
             {
+                // Get the logged-in user's ID from JWT claims
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                           ?? User.FindFirstValue(JwtRegisteredClaimNames.Sub);
+                var userRole = User.FindFirstValue(ClaimTypes.Role);
+
+                if (string.IsNullOrEmpty(userId))
+                    return Unauthorized(new { message = "Invalid or missing token." });
+                // Allow only Admins to mark for others
+                if (userRole != "Admin")
+                {
+                    // Check if user is trying to mark attendance for someone else
+                    if (userId != attendanceInRequestDto.UserId)
+                    {
+                        return Unauthorized(new
+                        {
+                            message = "❌ Mark-In failed: Cannot mark attendance for unauthorized user."
+                        });
+                    }
+                }
                 var attendance = await _attendanceService.MarkInTimeAsync(attendanceInRequestDto.UserId);
+
+                // Ignore attendanceInRequestDto.UserId and always use the logged-in userId
                 return Ok(attendance);
+
             }
             catch (InvalidOperationException ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
         }
+
 
         /// <summary>
         /// Marks a user's attendance for check-out.
@@ -53,6 +80,19 @@ namespace AttendanceManagementSystem.Controllers.V1
         {
             try
             {
+
+                // Get the logged-in user's ID from JWT claims
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                           ?? User.FindFirstValue(JwtRegisteredClaimNames.Sub);
+                var userRole = User.FindFirstValue(ClaimTypes.Role);
+
+                if (string.IsNullOrEmpty(userId))
+                    return Unauthorized(new { message = "Invalid or missing token." });
+                if (userRole != "Admin")
+                {
+                    if (userId != attendanceOutRequestDto.UserId) {
+                        return Unauthorized(new { message = "Mark-Out failed: Cannot mark attendance for unauthorized user." });}
+                }
                 var attendance = await _attendanceService.MarkOutTimeAsync(attendanceOutRequestDto.UserId);
                 return Ok(attendance);
             }
@@ -69,6 +109,7 @@ namespace AttendanceManagementSystem.Controllers.V1
         /// <param name="year">The year for the report.</param>
         /// <param name="month">The month for the report.</param>
         /// <returns>A monthly attendance report for the user.</returns>
+        [Authorize(Roles = "User")]
         [HttpGet("monthly/{userId}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<MonthlyAttendanceReportDto>))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

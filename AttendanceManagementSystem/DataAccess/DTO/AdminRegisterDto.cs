@@ -2,9 +2,13 @@
 {
     public class AdminRegisterDto
     {
-        public string UserId { get; set; }   // same as username
+        public string userID { get; set; }
+        public string UserName { get; set; }
+        public string FirstName { get; set; } = null!;
+        public string LastName { get; set; } = null!;
         public string Email { get; set; }
-        public string FullName { get; set; }
-        public string Password { get; set; }
+        public char Gender { get; set; }
+        public DateOnly DOB { get; set; }
+        public string Password { get; set; } = null!;
     }
 }

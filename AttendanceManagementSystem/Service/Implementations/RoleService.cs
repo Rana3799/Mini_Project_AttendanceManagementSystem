@@ -1,44 +1,80 @@
 ﻿using AttendanceManagementSystem.DataAccess.DTO;
-using AttendanceManagementSystem.DataAccess.Extensions;
+using AttendanceManagementSystem.DataAccess.Identity;
 using AttendanceManagementSystem.DataAccess.Interface;
 using AttendanceManagementSystem.Interface;
-using AutoMapper;
 
 namespace AttendanceManagementSystem.Service.Implementations
 {
     public class RoleService : IRoleService
     {
         private readonly IRoleRepository _roleRepository;
-        private readonly IMapper _mapper;
 
-        public RoleService(IRoleRepository roleRepository, IMapper mapper)
+        public RoleService(IRoleRepository roleRepository)
         {
             _roleRepository = roleRepository;
-            _mapper = mapper;
-        }
-        public Task<RoleResponseDto> AddRoleAsync()
-        {
-            throw new NotImplementedException();
         }
 
-        public Task DeleteRoleAsync(int id)
+        public async Task<RoleResponseDto> AddRoleAsync(RoleCreateDto dto)
         {
-            throw new NotImplementedException();
+            var role = new ApplicationRole
+            {
+                Name = dto.RoleName,
+                NormalizedName = dto.RoleName.ToUpper(),
+                Description = dto.Description,
+                IsActive = dto.IsActive,
+                HierarchySequence = dto.HierarchySequence
+            };
+
+            var createdRole = await _roleRepository.AddAsync(role);
+            return MapToResponse(createdRole);
         }
 
-        public Task<UserUpdateDto> UpdateRoleAsync(int id)
+        public async Task<RoleResponseDto> UpdateRoleAsync(string id, RoleUpdateDto dto)
         {
-            throw new NotImplementedException();
+            var role = await _roleRepository.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException("Role not found");
+
+            role.Description = dto.Description;
+            role.IsActive = dto.IsActive;
+            role.HierarchySequence = dto.HierarchySequence;
+
+            await _roleRepository.UpdateAsync(role);
+
+            return MapToResponse(role);
         }
 
-        Task<IEnumerable<RoleResponseDto>> IRoleService.GetAllRolesAsync()
+        public async Task DeleteRoleAsync(string id)
         {
-            throw new NotImplementedException();
+            var role = await _roleRepository.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException("Role not found");
+
+            await _roleRepository.DeleteAsync(role);
         }
 
-        Task<RoleResponseDto> IRoleService.GetRoleByIdAsync(int id)
+        public async Task<IEnumerable<RoleResponseDto>> GetAllRolesAsync()
         {
-            throw new NotImplementedException();
+            var roles = await _roleRepository.GetAllAsync();
+            return roles.Select(MapToResponse);
+        }
+
+        public async Task<RoleResponseDto> GetRoleByIdAsync(string id)
+        {
+            var role = await _roleRepository.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException("Role not found");
+
+            return MapToResponse(role);
+        }
+
+        private static RoleResponseDto MapToResponse(ApplicationRole role)
+        {
+            return new RoleResponseDto
+            {
+                Id = role.Id,
+                RoleName = role.Name!,
+                Description = role.Description,
+                IsActive = role.IsActive,
+                HierarchySequence = role.HierarchySequence
+            };
         }
     }
 }

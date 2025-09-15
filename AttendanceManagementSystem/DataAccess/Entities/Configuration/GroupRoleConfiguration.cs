@@ -12,17 +12,24 @@ namespace AttendanceManagementSystem.DataAccess.Entities.Configuration
             builder.HasData(
                 new ApplicationRole
                 {
-                    Id = RoleConstants.AdminRoleId, // static GUID to escape migration regeneration issues
+                    Id = RoleConstants.AdminRoleId,
                     Name = RoleConstants.Admin,
-                    NormalizedName = RoleConstants.Admin.ToUpper()
+                    NormalizedName = RoleConstants.Admin.ToUpper(),
+                    IsActive = true,
+                    HierarchySequence = 1,
+                    Description = "Administrator role with full permissions"
                 },
                 new ApplicationRole
                 {
-                    Id = RoleConstants.UserRoleId, // static GUID to escape migration regeneration issues
+                    Id = RoleConstants.UserRoleId,
                     Name = RoleConstants.User,
-                    NormalizedName = RoleConstants.User.ToUpper()
+                    NormalizedName = RoleConstants.User.ToUpper(),
+                    IsActive = true,
+                    HierarchySequence = 2,
+                    Description = "Standard application user"
                 }
             );
+
         }
     }
 }

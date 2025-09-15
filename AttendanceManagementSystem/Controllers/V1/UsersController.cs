@@ -50,82 +50,68 @@ namespace AttendanceManagementSystem.Controllers.V1
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] UserCreateDto dto)
         {
-            //var validationResult = await _validator.ValidateAsync(dto);
-            ValidationResult validationResult = await _validator.ValidateAsync(dto);
-            if (!validationResult.IsValid)
+            try
             {
-                return BadRequest(validationResult.Errors.Select(e => e.ErrorMessage));
+                if (dto == null)
+                    return BadRequest(new { message = "Invalid request data." });
+
+                var validationResult = await _validator.ValidateAsync(dto);
+                if (!validationResult.IsValid)
+                    return BadRequest(validationResult.Errors.Select(e => e.ErrorMessage));
+
+                if (string.IsNullOrWhiteSpace(dto.userID))
+                    return BadRequest(new { message = "UserId is required." });
+
+                if (string.IsNullOrWhiteSpace(dto.Email))
+                    return BadRequest(new { message = "Email is required." });
+
+                if (string.IsNullOrWhiteSpace(dto.Password))
+                    return BadRequest(new { message = "Password is required." });
+
+                var existingUser = await _userManager.FindByNameAsync(dto.userID);
+                if (existingUser != null)
+                    return Conflict(new { message = "User with this UserId already exists." });
+
+                var existingEmailUser = await _userManager.FindByEmailAsync(dto.Email);
+                if (existingEmailUser != null)
+                    return Conflict(new { message = "User with this Email already exists." });
+
+                // 🔹 Ensure mapping sets UserName and Email
+                ApplicationUser applicationUser = _mapper.Map<ApplicationUser>(dto);
+                // Set audit info before saving
+                applicationUser.CreatedBy = User?.Identity?.Name ?? applicationUser.UserName;
+                //applicationUser.CreatedOn = DateTime.UtcNow;
+
+                var result = await _userManager.CreateAsync(applicationUser, dto.Password);
+
+                if (!result.Succeeded)
+                    return BadRequest(result.Errors.Select(e => e.Description));
+
+                if (!await _roleManager.RoleExistsAsync(RoleConstants.User))
+                {
+                    await _roleManager.CreateAsync(new ApplicationRole
+                    {
+                        Name = RoleConstants.User,
+                        NormalizedName = RoleConstants.User.ToUpper()
+                    });
+                }
+
+                await _userManager.AddToRoleAsync(applicationUser, RoleConstants.User);
+
+                return Ok(new { message = "User registered successfully" });
             }
-
-            //if (dto == null)
-            //    return BadRequest("Invalid request");
-
-            if (dto == null)
-                return BadRequest(new { message = "Invalid request data." });
-
-            // 🔹 Basic validation
-            if (string.IsNullOrWhiteSpace(dto.userID))
-                return BadRequest(new { message = "UserId is required." });
-
-            if (string.IsNullOrWhiteSpace(dto.Email))
-                return BadRequest(new { message = "Email is required." });
-
-            if (string.IsNullOrWhiteSpace(dto.Password))
-                return BadRequest(new { message = "Password is required." });
-
-            // Check if user already exists by username
-            var existingUser = await _userManager.FindByNameAsync(dto.userID);
-            if (existingUser != null)
-                return Conflict(new { message = "User with this UserId already exists." });
-
-            // Check if user already exists by email
-            var existingEmailUser = await _userManager.FindByEmailAsync(dto.Email);
-            if (existingEmailUser != null)
-                return Conflict(new { message = "User with this Email already exists." });
-
-            ApplicationUser applicationUser = _mapper.Map<ApplicationUser>(dto);
-            // Create user
-            //var user = new ApplicationUser
-            //{
-            //    UserName = dto.userID,
-            //    Email = dto.Email,
-            //    FullName = dto.FullName,
-            //    FirstName=
-            //    Gender=dto.Gender,
-            //    DOB = dto.DOB,
-            //    RoleId=dto.RoleId,
-            //    OrganizationId=dto.OrganizationId,                
-            //    CreatedDate = DateTime.UtcNow // This property should be used for the creation timestamp
-
-            //};
-
-            var result = await _userManager.CreateAsync(applicationUser, dto.Password);
-
-            if (!result.Succeeded)
-                return BadRequest(result.Errors);
-            // Ensure 'User' role exists and assign it
-            if (!await _roleManager.RoleExistsAsync(RoleConstants.User))
+            catch (Exception ex)
             {
-                await _roleManager.CreateAsync(new ApplicationRole { Name = RoleConstants.User });
+                return StatusCode(500, new
+                {
+                    message = ex.Message,
+                    inner = ex.InnerException?.Message,
+                    stack = ex.StackTrace
+                });
             }
-            await _userManager.AddToRoleAsync(applicationUser, RoleConstants.User);
-
-            //// Ensure User role exists
-            //if (!await _roleManager.RoleExistsAsync("User"))
-            //{
-            //    var role = new ApplicationRole
-            //    {
-            //        Name = "User",
-            //        NormalizedName = "USER"
-            //    };
-            //    await _roleManager.CreateAsync(role);
-            //}
-
-            //// Assign User role
-            //await _userManager.AddToRoleAsync(user, "User");
-
-            return Ok(new { message = "User registered successfully" });
         }
+
+
 
         // POST: api/users/login
         [HttpPost("login")]

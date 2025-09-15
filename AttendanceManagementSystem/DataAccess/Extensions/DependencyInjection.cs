@@ -1,11 +1,12 @@
 ﻿using AttendanceManagementSystem.DataAccess.Entities.Data;
 using AttendanceManagementSystem.DataAccess.Identity;
 using AttendanceManagementSystem.DataAccess.IdentityPolicy;
-using AttendanceManagementSystem.DataAccess.Interface;
 using AttendanceManagementSystem.DataAccess.ObjectMapper;
-using AttendanceManagementSystem.DataAccess.Repository;
-using AttendanceManagementSystem.Interface;
-using AttendanceManagementSystem.Service.Implementations;
+using AttendanceManagementSystem.DataAccess.Interface;    // For IOrganizationRepository etc.
+using AttendanceManagementSystem.DataAccess.Repository;  // For OrganizationRepository etc.
+using AttendanceManagementSystem.Interface;              // For IOrganizationService etc.
+using AttendanceManagementSystem.Service.Implementations;// For OrganizationService etc.
+
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -49,11 +50,18 @@ namespace AttendanceManagementSystem.DataAccess.Extensions
 
             // Register repositories
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-            //services.AddScoped<IUserRepository, UserRepository>();
-            services.AddScoped<IUserRepository, UserRepository>();
-            services.AddScoped<IAttendanceRepository, AttendanceRepository>();
+            // Repository registrations
             services.AddScoped<IOrganizationRepository, OrganizationRepository>();
             services.AddScoped<IRoleRepository, RoleRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IAttendanceRepository, AttendanceRepository>();
+
+            // Service registrations
+            services.AddScoped<IOrganizationService, OrganizationService>();
+            services.AddScoped<IRoleService, RoleService>();
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IAttendanceService, AttendanceService>();
+
 
             return services;
         }

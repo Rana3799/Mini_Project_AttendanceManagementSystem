@@ -93,6 +93,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+//app.UseAuthentication(); //Need to be on top when using JWT
 app.UseAuthorization();
 
 app.MapControllers();
