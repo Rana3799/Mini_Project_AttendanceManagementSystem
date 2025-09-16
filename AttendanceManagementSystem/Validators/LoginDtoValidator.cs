@@ -10,10 +10,9 @@ namespace AttendanceManagementSystem.Validators
     {
         public LoginDtoValidator()
         {
-            RuleFor(x => x.Email)
-                .NotEmpty().WithMessage("Email is required.")
-                .EmailAddress(EmailValidationMode.AspNetCoreCompatible)
-                .WithMessage("Invalid email format.");
+            RuleFor(x => x.UserName)
+                .NotEmpty().WithMessage("User Name is required.")
+                .WithMessage("Invalid User Name.");
 
             RuleFor(x => x.Password)
                 .NotEmpty().WithMessage("Password is required.")
