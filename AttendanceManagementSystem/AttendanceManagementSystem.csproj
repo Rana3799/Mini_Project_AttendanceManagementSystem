@@ -20,6 +20,8 @@
   <ItemGroup>
     <Compile Remove="Controllers\V1\AdminController.cs" />
     <Compile Remove="Controllers\V1\UsersController.cs" />
+    <Compile Remove="Controllers\V1\RoleController.cs" />
+    <Compile Remove="DataAccess\Validators\RoleCreateDtoValidator.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -46,6 +48,8 @@
     <Folder Include="DataAccess\DIRegistration\" />
     <Folder Include="DataAccess\Entities\Models\" />
     <Folder Include="DataAccess\Entities\Seeders\" />
+    <Folder Include="Migrations\" />
+    <Folder Include="MailConfig\" />
   </ItemGroup>
 
 </Project>

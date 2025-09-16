@@ -63,15 +63,24 @@ namespace AttendanceManagementSystem.DataAccess.Repository
                 .Where(a => a.UserId == userId
                          && a.AttendanceDate.Year == year
                          && a.AttendanceDate.Month == month)
-                .Select(a => new MonthlyAttendanceReportDto
+                .GroupBy(a => new { a.UserId, Date = a.AttendanceDate.Date })
+                .Select(g => new MonthlyAttendanceReportDto
                 {
-                    UserId = a.UserId,
-                    Date = a.AttendanceDate,
-                    CheckInTime = a.Type == "IN" ? a.AttendanceDate : null,
-                    CheckOutTime = a.Type == "OUT" ? a.AttendanceDate : null
+                    UserId = g.Key.UserId,
+                    Date = g.Key.Date,
+                    CheckInTime = g.Where(x => x.Type == "IN")
+                                   .OrderBy(x => x.AttendanceDate)
+                                   .Select(x => (DateTime?)x.AttendanceDate)
+                                   .FirstOrDefault(),
+                    CheckOutTime = g.Where(x => x.Type == "OUT")
+                                    .OrderByDescending(x => x.AttendanceDate)
+                                    .Select(x => (DateTime?)x.AttendanceDate)
+                                    .FirstOrDefault()
                 })
+                .OrderBy(r => r.Date)
                 .ToListAsync();
         }
+
 
         public async Task<Attendance> GetTodayAttendanceByUserIdAsync(string userId, DateTime dateTime)
         {

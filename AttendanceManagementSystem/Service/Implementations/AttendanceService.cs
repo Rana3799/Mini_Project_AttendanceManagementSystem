@@ -22,8 +22,8 @@ namespace AttendanceManagementSystem.Service.Implementations
         public async Task<Attendance> MarkInTimeAsync(string userId)
         {
             var now = DateTime.Now.TimeOfDay;
-            var inTimeStart = new TimeSpan(16, 0, 0); // 11:00 AM
-            var inTimeEnd = new TimeSpan(17, 30, 0);  // 11:30 AM
+            var inTimeStart = new TimeSpan(01, 30, 0); // 11:00 AM
+            var inTimeEnd = new TimeSpan(02, 00, 0);  // 11:30 AM
 
             if (now < inTimeStart || now > inTimeEnd)
             {
@@ -31,7 +31,7 @@ namespace AttendanceManagementSystem.Service.Implementations
                 throw new InvalidOperationException("Check-in is only allowed between 11:00 AM and 11:30 AM.");
             }
 
-            var existingAttendance = await _attendanceRepository.GetTodayAttendanceByUserIdAsync(userId, DateTime.Today);
+            var existingAttendance = await _attendanceRepository.GetTodayAttendanceByUserIdAsync(userId, DateTime.Now);
             if (existingAttendance != null && existingAttendance.Type == "IN")
             {
                 throw new InvalidOperationException("You have already checked in today.");
@@ -40,8 +40,9 @@ namespace AttendanceManagementSystem.Service.Implementations
             var attendanceRecord = new Attendance
             {
                 UserId = userId,
-                AttendanceDate = DateTime.UtcNow,
-                Type = "IN"
+                AttendanceDate = DateTime.Now,
+                Type = "IN",
+                CheckInTime= DateTime.Now
             };
 
             return await _attendanceRepository.AddAsync(attendanceRecord);
@@ -50,8 +51,8 @@ namespace AttendanceManagementSystem.Service.Implementations
         public async Task<Attendance> MarkOutTimeAsync(string userId)
         {
             var now = DateTime.Now.TimeOfDay;
-            var outTimeStart = new TimeSpan(16, 0, 0); // 8:00 AM
-            var outTimeEnd = new TimeSpan(18, 30, 0);  // 8:30 AM
+            var outTimeStart = new TimeSpan(8, 0, 0); // 8:00 AM
+            var outTimeEnd = new TimeSpan(8, 30, 0);  // 8:30 AM
 
             if (now < outTimeStart || now > outTimeEnd)
             {
@@ -59,7 +60,7 @@ namespace AttendanceManagementSystem.Service.Implementations
                 throw new InvalidOperationException("Check-out is only allowed between 8:00 PM and 8:30 PM.");
             }
 
-            var existingAttendance = await _attendanceRepository.GetTodayAttendanceByUserIdAsync(userId, DateTime.Today);
+            var existingAttendance = await _attendanceRepository.GetTodayAttendanceByUserIdAsync(userId, DateTime.Now);
             if (existingAttendance == null || existingAttendance.Type == "OUT")
             {
                 throw new InvalidOperationException("You can only check out after checking in.");
@@ -68,8 +69,9 @@ namespace AttendanceManagementSystem.Service.Implementations
             var attendanceRecord = new Attendance
             {
                 UserId = userId,
-                AttendanceDate = DateTime.UtcNow,
-                Type = "OUT"
+                AttendanceDate = DateTime.Now,
+                Type = "OUT",
+                CheckOutTime= DateTime.Now
             };
 
             return await _attendanceRepository.AddAsync(attendanceRecord);
@@ -84,7 +86,7 @@ namespace AttendanceManagementSystem.Service.Implementations
             var report = allRecords.GroupBy(a => a.AttendanceDate.Date)
                                    .Select(g => new MonthlyAttendanceReportDto
                                    {
-                                       //UserId = g.Fir,
+                                       UserId = userId,
                                        Date = g.Key,
                                        CheckInTime = g.FirstOrDefault(a => a.Type == "IN")?.AttendanceDate,
                                        CheckOutTime = g.FirstOrDefault(a => a.Type == "OUT")?.AttendanceDate

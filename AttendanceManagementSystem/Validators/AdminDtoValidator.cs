@@ -10,7 +10,7 @@ namespace AttendanceManagementSystem.Validators
         public AdminDtoValidator()
         {
             // UserId: required, alphanumeric + underscores only, min 3 chars
-            RuleFor(x => x.UserId)
+            RuleFor(x => x.userID)
                 .NotEmpty().WithMessage("UserId is required.")
                 .Matches(@"^[a-zA-Z0-9_]+$").WithMessage("UserId can contain only letters, numbers, and underscores.")
                 .MinimumLength(3).WithMessage("UserId must be at least 3 characters long.");
@@ -21,9 +21,9 @@ namespace AttendanceManagementSystem.Validators
                 .EmailAddress(EmailValidationMode.AspNetCoreCompatible).WithMessage("Invalid email format.");
 
             // FullName: required, letters and spaces only
-            RuleFor(x => x.FullName)
-                .NotEmpty().WithMessage("Full name is required.")
-                .Matches(@"^[a-zA-Z\s]+$").WithMessage("Full name can contain only letters and spaces.");
+            //RuleFor(x => x.FullName)
+            //    .NotEmpty().WithMessage("Full name is required.")
+            //    .Matches(@"^[a-zA-Z\s]+$").WithMessage("Full name can contain only letters and spaces.");
 
             // Password: required, minimum 6 chars
             RuleFor(x => x.Password)
