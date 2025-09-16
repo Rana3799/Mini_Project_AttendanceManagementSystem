@@ -109,12 +109,19 @@ namespace AttendanceManagementSystem.Controllers.V1
         /// <param name="year">The year for the report.</param>
         /// <param name="month">The month for the report.</param>
         /// <returns>A monthly attendance report for the user.</returns>
-        [Authorize(Roles = "User")]
+       // [Authorize(Roles = "User")]
         [HttpGet("monthly/{userId}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<MonthlyAttendanceReportDto>))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetUserMonthlyAttendance(string userId, [FromQuery] int year, [FromQuery] int month)
         {
+
+            var user = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                         ?? User.FindFirstValue(JwtRegisteredClaimNames.Sub);
+            if (user != userId)
+            { 
+              return Unauthorized(new { message = "You are not permitted to view other users’ attendance. Please reach out to the admin if required." });
+            }
             var report = await _attendanceService.GetUserMonthlyAttendanceAsync(userId, year, month);
             if (report == null || !report.Any())
             {

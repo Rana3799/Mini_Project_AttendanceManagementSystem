@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Controllers\V1\AdminController.cs" />
     <Compile Remove="Controllers\V1\RoleController.cs" />
     <Compile Remove="DataAccess\Validators\RoleCreateDtoValidator.cs" />
   </ItemGroup>

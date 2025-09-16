@@ -29,6 +29,7 @@ namespace AttendanceManagementSystem.Controllers.V1
         private readonly IConfiguration _configuration;
         private readonly IValidator<UserCreateDto> _validator;
         private readonly IMapper _mapper;
+        private readonly IValidator<AdminRegisterDto> _adminvalidator;
 
         public UsersController(
             UserManager<ApplicationUser> userManager,
@@ -36,6 +37,7 @@ namespace AttendanceManagementSystem.Controllers.V1
             RoleManager<ApplicationRole> roleManager,
             IConfiguration configuration,
             IValidator<UserCreateDto> validator,
+            IValidator<AdminRegisterDto> adminvalidator,
             IMapper mapper)
         {
             _userManager = userManager;
@@ -43,11 +45,74 @@ namespace AttendanceManagementSystem.Controllers.V1
             _configuration = configuration;
             _roleManager = roleManager;
             _validator = validator;
+            _adminvalidator = adminvalidator;
             _mapper = mapper;
         }
 
+
+        /// <summary>
+        /// Register a new Admin user (SuperAdmin only).
+        /// </summary>
+        [HttpPost("Admin-register")]
+        public async Task<IActionResult> RegisterAdmin([FromBody] AdminRegisterDto dto)
+        {
+            try
+            {
+                if (dto == null)
+                    return BadRequest("Invalid request");
+
+                var validationResult = await _adminvalidator.ValidateAsync(dto);
+                if (!validationResult.IsValid)
+                    return BadRequest(validationResult.Errors.Select(e => e.ErrorMessage));
+
+                // Check if user already exists by username
+                var existingUser = await _userManager.FindByNameAsync(dto.userID);
+                if (existingUser != null)
+                    return Conflict(new { message = "User with this UserId already exists." });
+
+                // Check if user already exists by email
+                var existingEmailUser = await _userManager.FindByEmailAsync(dto.Email);
+                if (existingEmailUser != null)
+                    return Conflict(new { message = "User with this Email already exists." });
+
+                // Map DTO -> ApplicationUser
+                ApplicationUser applicationUser = _mapper.Map<ApplicationUser>(dto);
+                applicationUser.CreatedBy = User?.Identity?.Name ?? applicationUser.UserName;
+                var result = await _userManager.CreateAsync(applicationUser, dto.Password);
+
+                if (!result.Succeeded)
+                    return BadRequest(result.Errors.Select(e => e.Description));
+
+                // Ensure Admin role exists
+                if (!await _roleManager.RoleExistsAsync("Admin"))
+                {
+                    var role = new ApplicationRole
+                    {
+                        Name = "Admin",
+                        NormalizedName = "ADMIN"
+                    };
+                    await _roleManager.CreateAsync(role);
+                }
+
+                // Assign Admin role
+                await _userManager.AddToRoleAsync(applicationUser, "Admin");
+
+                return Ok(new { message = "Admin registered successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    message = ex.Message,
+                    inner = ex.InnerException?.Message,
+                    stack = ex.StackTrace
+                });
+            }
+        }
+
+
         // POST: api/users/register
-        [HttpPost("register")]
+        [HttpPost("User-register")]
         public async Task<IActionResult> Register([FromBody] UserCreateDto dto)
         {
             try
@@ -123,7 +188,8 @@ namespace AttendanceManagementSystem.Controllers.V1
                 return BadRequest(validationResult.Errors.Select(e => e.ErrorMessage));
             }
 
-            var user = await _userManager.FindByEmailAsync(dto.Email);
+            // Change from FindByEmailAsync -> FindByNameAsync
+            var user = await _userManager.FindByNameAsync(dto.UserName);
             if (user == null)
                 return Unauthorized("Invalid credentials");
 
@@ -145,7 +211,7 @@ namespace AttendanceManagementSystem.Controllers.V1
 
             var claims = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.userID),
+                new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email ?? ""),
                // new Claim("fullName", user.FullName ?? "")
             };
@@ -165,28 +231,5 @@ namespace AttendanceManagementSystem.Controllers.V1
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-
-    //    [HttpPut("{UserId}")]
-    //    public async Task<IActionResult> UserUpdate([FromRoute] string UserId, [FromBody] UserUpdateDto dto)
-    //    {
-    //        var validationResult = await _validator.ValidateAsync(dto);
-    //        if (!validationResult.IsValid)
-    //            return BadRequest(validationResult.Errors.Select(e => e.ErrorMessage));
-
-    //        var user = await _userManager.FindByIdAsync(UserId);
-    //        if (user == null)
-    //            return NotFound("User not found.");
-
-    //        _mapper.Map(dto, user);
-
-    //        var result = await _userManager.UpdateAsync(user);
-
-    //        if (result.Succeeded)
-    //            return Ok(new { message = "User updated successfully" });
-
-    //        return BadRequest(result.Errors.Select(e => e.Description));
-    //    }
-
-
     }
 }
